@@ -22,19 +22,41 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.alibaba.csp.sentinel.util.PidUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
  * @author leyou
  */
 public class LogBase {
-    public static final String LOG_CHARSET = "utf-8";
+
+    public static final String CONFIG_LOG_DIR = "csp.sentinel.log.dir";
+
+    private static final String LOG_CHARSET = "utf-8";
     private static final String DIR_NAME = "logs" + File.separator + "csp";
     private static final String USER_HOME = "user.home";
     private static String logBaseDir;
 
     static {
-        String userHome = System.getProperty(USER_HOME);
-        setLogBaseDir(userHome);
+        initLogBaseDir();
+    }
+
+    private static void initLogBaseDir() {
+        if (!setCustomLogDir()) {
+            String userHome = System.getProperty(USER_HOME);
+            setDefaultLogBaseDir(userHome);
+        }
+    }
+
+    private static boolean setCustomLogDir() {
+        String dir = System.getProperty(CONFIG_LOG_DIR);
+        if (StringUtil.isBlank(dir)) {
+            return false;
+        }
+        if (!dir.endsWith(File.separator)) {
+            dir += File.separator;
+        }
+        setAndTryCreateLogDir(dir);
+        return true;
     }
 
     /**
@@ -47,25 +69,37 @@ public class LogBase {
     }
 
     /**
-     * Change log dir, the dir will be created if not exits
+     * Set default log directory. The directory will be created if it does not exist.
      *
-     * @param baseDir
+     * @param baseDir base directory
      */
-    protected static void setLogBaseDir(String baseDir) {
+    protected static void setDefaultLogBaseDir(String baseDir) {
         if (!baseDir.endsWith(File.separator)) {
             baseDir += File.separator;
         }
         String path = baseDir + DIR_NAME + File.separator;
+        setAndTryCreateLogDir(path);
+    }
+
+    private static void setAndTryCreateLogDir(String path) {
         File dir = new File(path);
         if (!dir.exists()) {
-            dir.mkdirs();
+            boolean ok = dir.mkdirs();
+            if (!ok) {
+                System.err.println("[LogBase] WARNING: failed to create log directory: " + path);
+            }
         }
         logBaseDir = path;
+        System.out.println("[LogBase] Sentinel log directory: " + path);
     }
 
     protected static Handler makeLogger(String logName, Logger heliumRecordLog) {
         CspFormatter formatter = new CspFormatter();
-        String fileName = LogBase.getLogBaseDir() + logName + ".pid" + PidUtil.getPid();
+        String baseDir = logBaseDir;
+        if (!logBaseDir.endsWith(File.separator)) {
+            baseDir += File.separator;
+        }
+        String fileName = baseDir + logName + ".pid" + PidUtil.getPid();
         Handler handler = null;
         try {
             handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 1, true);

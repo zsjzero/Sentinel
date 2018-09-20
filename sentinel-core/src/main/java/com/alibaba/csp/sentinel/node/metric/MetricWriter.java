@@ -88,6 +88,9 @@ public class MetricWriter {
         }
         RecordLog.info("new MetricWriter, singleFileSize=" + singleFileSize + ", totalFileCount=" + totalFileCount);
         this.baseDir = METRIC_BASE_DIR;
+        if (!this.baseDir.endsWith(File.separator)) {
+            this.baseDir += File.separator;
+        }
         File dir = new File(baseDir);
         if (!dir.exists()) {
             dir.mkdirs();

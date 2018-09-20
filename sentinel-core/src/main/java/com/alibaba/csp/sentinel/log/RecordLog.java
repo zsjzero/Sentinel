@@ -36,8 +36,8 @@ public class RecordLog extends LogBase {
     /**
      * Change log dir, the dir will be created if not exits
      */
-    public static void resetLogBaseDir(String baseDir) {
-        setLogBaseDir(baseDir);
+    public static void resetDefaultLogBaseDir(String baseDir) {
+        setDefaultLogBaseDir(baseDir);
         logHandler = makeLogger(FILE_NAME, heliumRecordLog);
     }
 

@@ -19,16 +19,23 @@ import java.io.File;
 
 import com.alibaba.csp.sentinel.eagleeye.EagleEye;
 import com.alibaba.csp.sentinel.eagleeye.StatLogger;
+import com.alibaba.csp.sentinel.log.LogBase;
 
+/**
+ * Log helper to record logs with EagleEye logger.
+ */
 public class EagleEyeLogUtil {
 
-    private static final String DIR_NAME = "csp";
     private static final String FILE_NAME = "sentinel-block.log";
 
     private static StatLogger statLogger;
 
     static {
-        String path = DIR_NAME + File.separator + FILE_NAME;
+        String baseDir = LogBase.getLogBaseDir();
+        if (!baseDir.endsWith(File.separator)) {
+            baseDir += File.separator;
+        }
+        String path = baseDir + FILE_NAME;
 
         statLogger = EagleEye.statLoggerBuilder("sentinel-block-record")
             .intervalSeconds(1)
@@ -36,7 +43,7 @@ public class EagleEyeLogUtil {
             .keyDelimiter(',')
             .valueDelimiter(',')
             .maxEntryCount(6000)
-            .baseLogFilePath(path)
+            .configLogFilePath(path)
             .maxFileSizeMB(300)
             .maxBackupIndex(3)
             .buildSingleton();

@@ -44,6 +44,13 @@ class BaseLoggerBuilder<T extends BaseLoggerBuilder<T>> {
     }
 
     @SuppressWarnings("unchecked")
+    public T configLogFilePath(String filePath) {
+        EagleEyeCoreUtils.checkNotNullEmpty(filePath, "filePath");
+        this.filePath = filePath;
+        return (T)this;
+    }
+
+    @SuppressWarnings("unchecked")
     private T configLogFilePath(String filePathToConfig, String basePath) {
         EagleEyeCoreUtils.checkNotNullEmpty(filePathToConfig, "filePath");
         if (filePathToConfig.charAt(0) != '/') {
